@@ -7,6 +7,8 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/TPSAnimInstance.h"
 
 // Sets default values
 ATPSCharacter::ATPSCharacter()
@@ -25,7 +27,7 @@ ATPSCharacter::ATPSCharacter()
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/MilitaryCharDark/MW_Style2_Male.MW_Style2_Male'"));
 	if (MeshRef.Succeeded())
 		GetMesh()->SetSkeletalMesh(MeshRef.Object);
-
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
 	SpringArm->TargetArmLength = 500;
@@ -33,6 +35,7 @@ ATPSCharacter::ATPSCharacter()
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->SocketOffset = FVector(0, 50, 50);
 
+	GetCharacterMovement()->MaxWalkSpeed = 300;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -54,6 +57,14 @@ ATPSCharacter::ATPSCharacter()
 	if (TurnActionRef.Succeeded())
 		TurnAction = TurnActionRef.Object;
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> RunActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Run.IA_Run'"));
+	if (RunActionRef.Succeeded())
+		RunAction = RunActionRef.Object;
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> FireActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Fire.IA_Fire'"));
+	if (FireActionRef.Succeeded())
+		FireAction = FireActionRef.Object;
+
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Animation/ABP_Character.ABP_Character_C'"));
 	if (AnimInstanceRef.Succeeded()) 
 	{
@@ -68,7 +79,7 @@ ATPSCharacter::ATPSCharacter()
 void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	GetCharacterMovement()->MaxWalkSpeed = 300;
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController) {
 		UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
@@ -100,7 +111,9 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhanedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhanedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Move);
 		EnhanedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Turn);
-		
+		EnhanedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Run);
+		EnhanedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &ATPSCharacter::Input_Run);
+		EnhanedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Fire);
 	}
 }
 
@@ -118,5 +131,24 @@ void ATPSCharacter::Input_Turn(const FInputActionValue& InputValue)
 
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(LookAxisVector.Y);
+}
+
+void ATPSCharacter::Input_Run(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("Run"));
+	const bool IsRun = InputValue.Get<bool>();
+	if(IsRun == true)
+		GetCharacterMovement()->MaxWalkSpeed = 600;
+	else
+		GetCharacterMovement()->MaxWalkSpeed = 300;
+
+}
+
+void ATPSCharacter::Input_Fire(const FInputActionValue& InputValue)
+{
+	UTPSAnimInstance* AnimInstance = Cast<UTPSAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance) {
+		AnimInstance->PlayFireMontage();
+	}
 }
 
