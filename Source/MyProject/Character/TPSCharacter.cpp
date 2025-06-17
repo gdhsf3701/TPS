@@ -183,13 +183,16 @@ void ATPSCharacter::Input_Fire(const FInputActionValue& InputValue)
 
 	bool bFireStart = InputValue.Get<bool>();
 
-	if (bFireStart) {
+	if (bFireStart && EquipWeapon->GetAmmoRemainCount()>0)
+	{
 		AnimInstance->PlayFireMontage();
-
+		EquipWeapon->StartFire(this);
 	}
-	else {
+	else 
+	{
 		AnimInstance->StopAllMontages(false);
 
+		EquipWeapon->StopFire();
 	}
 
 }
