@@ -4,6 +4,8 @@
 #include "Weapon/Weapon.h"
 #include "Character/TPSCharacter.h"
 #include "Weapon/Bullet.h"
+#include "Particles/ParticleSystem.h"
+#include "Kismet/GameplayStatics.h"
 // Sets default values
 AWeapon::AWeapon()
 {
@@ -20,6 +22,11 @@ AWeapon::AWeapon()
 
 	FireType = EFireType::EF_LineTrace;
 
+
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> HitEffectRef(TEXT("/Script/Engine.ParticleSystem'/Game/_Art/Efect/T_HitEffect.T_HitEffect'"));
+	if (HitEffectRef.Succeeded()) {
+		HitEffect = HitEffectRef.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -67,10 +74,19 @@ void AWeapon::StopFire()
 
 void AWeapon::Reloading()
 {
+	if (MeshComponent) {
+		MeshComponent->HideBoneByName(FName("b_gun_mag"), EPhysBodyOp::PBO_None);
+	}
 }
 
-void AWeapon::FinisgReloading()
+void AWeapon::FinishReloading()
 {
+	if (MeshComponent)
+		MeshComponent->UnHideBoneByName(FName("b_gun_mag"));
+
+	SetAmmoRemainCount(AmmoMaxCount);
+
+	GEngine->AddOnScreenDebugMessage(1, -1, FColor::Magenta, TEXT("sdawsd"));
 }
 
 void AWeapon::FireWithProjectile(TWeakObjectPtr<class ATPSCharacter> OwnerCharacter)
@@ -106,6 +122,8 @@ void AWeapon::FireWithProjectile(TWeakObjectPtr<class ATPSCharacter> OwnerCharac
 
 }
 
+
+
 void AWeapon::FireWithLineTrace(TWeakObjectPtr<class ATPSCharacter> OwnerCharacter)
 {
 	ATPSCharacter* Character = OwnerCharacter.Get();
@@ -130,7 +148,13 @@ void AWeapon::FireWithLineTrace(TWeakObjectPtr<class ATPSCharacter> OwnerCharact
 	if (HitDetected)
 	{
 		if (HitResult.GetActor()) {
-			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, TEXT("LineTraceHit"));
+			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, TEXT("LineTraceHit"));	     
+
+			FTransform BulletTransform;
+
+			BulletTransform.SetLocation(HitResult.ImpactPoint);
+
+			PlayHitEffect(BulletTransform);
 		}
 	}
 
@@ -138,9 +162,16 @@ void AWeapon::FireWithLineTrace(TWeakObjectPtr<class ATPSCharacter> OwnerCharact
 
 	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, FString::Printf(TEXT("Ammo Remain Count : %d"), GetAmmoRemainCount()));
 
+
+
 #if ENABLE_DRAW_DEBUG
 	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
 	DrawDebugLine(GetWorld(), Start, End, DrawColor, false, 1.0f);
 #endif
+}
+
+void AWeapon::PlayHitEffect(FTransform HitTransform)
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitTransform);
 }
 

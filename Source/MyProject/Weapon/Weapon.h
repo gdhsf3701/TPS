@@ -33,12 +33,13 @@ public:
 	virtual void StartFire(TWeakObjectPtr<class ATPSCharacter> OwnerCharacter);
 	virtual void StopFire();
 	virtual void Reloading();
-	virtual void FinisgReloading();
+	virtual void FinishReloading();
 
 
 protected:
 	void FireWithProjectile(TWeakObjectPtr<class ATPSCharacter> OwnerCharacter);
 	void FireWithLineTrace(TWeakObjectPtr<class ATPSCharacter> OwnerCharacter);
+	void PlayHitEffect(FTransform HitTransform);
 
 public:
 
@@ -70,6 +71,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Properties)
 	float FireInterval = 0.1f;
+
+	UPROPERTY(EditAnywhere, Category = HitEffect)
+	TObjectPtr<class UParticleSystem> HitEffect;
 
 	UPROPERTY(EditAnywhere, Category = Properties)
 	EFireType FireType = EFireType::EF_Projectile;

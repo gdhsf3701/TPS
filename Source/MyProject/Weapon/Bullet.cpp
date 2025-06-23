@@ -75,7 +75,6 @@ void ABullet::OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 
 	BulletTransform.SetLocation(Hit.ImpactPoint);
 
-
 	PlayHitEffect(BulletTransform);
 	Destroy();
 }
