@@ -32,7 +32,10 @@ public:
 	UFUNCTION()
 	void OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
-
+public:
+	FORCEINLINE void SetAttackDamage(float NewAttackDamage) { AttackDamage = NewAttackDamage; };
+	FORCEINLINE float GetAttackDamage() { return AttackDamage; }
+	
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<class USphereComponent> SphereCollision;
@@ -51,4 +54,7 @@ protected:
 
 	UPROPERTY(EditAnywhere,Category = Properties)
 	float MaxSpeed = 30000;
+
+	UPROPERTY(VisibleAnywhere, Category = Properties)
+	float AttackDamage = 0;
 };

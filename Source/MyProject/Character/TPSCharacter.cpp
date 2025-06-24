@@ -22,7 +22,6 @@ ATPSCharacter::ATPSCharacter()
 	GetMesh()->SetRelativeLocation(FVector(0.0, 0.0, -88.0));
 	GetMesh()->SetRelativeRotation(FRotator(0.0, -90.0, 0.0))
 		;
-	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/_Art/MilitaryCharDark/MW_Style2_Male.MW_Style2_Male'"));
@@ -70,13 +69,14 @@ ATPSCharacter::ATPSCharacter()
 	if (ReloadActionRef.Succeeded())
 		ReloadAction = ReloadActionRef.Object;
 
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Animation/ABP_Character.ABP_Character_C'"));
 	if (AnimInstanceRef.Succeeded()) 
 	{
 		GetMesh()->SetAnimClass(AnimInstanceRef.Class);
 	}
 
-	static  ConstructorHelpers::FClassFinder<AWeapon> WeaponRef(TEXT("/Script/Engine.Blueprint'/Game/BluePrints/Weapon.Weapon'"));
+	static  ConstructorHelpers::FClassFinder<AWeapon> WeaponRef(TEXT("/Script/Engine.Blueprint'/Game/BluePrints/Weapon.Weapon_C'"));
 	if (WeaponRef.Succeeded()) {
 		WeaponClass = WeaponRef.Class;
 

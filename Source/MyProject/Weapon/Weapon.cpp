@@ -6,6 +6,7 @@
 #include "Weapon/Bullet.h"
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/DamageEvents.h"
 // Sets default values
 AWeapon::AWeapon()
 {
@@ -109,6 +110,7 @@ void AWeapon::FireWithProjectile(TWeakObjectPtr<class ATPSCharacter> OwnerCharac
 	ABullet* SpawnBullet = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), SpawnParameter);
 
 	if (SpawnBullet) {
+		SpawnBullet->SetAttackDamage(AttackDamage);
 		SpawnBullet->SetActorLocation(FireTransfrom.GetLocation());
 		SpawnBullet->SetActorRotation(FireTransfrom.GetRotation());
 
@@ -147,15 +149,20 @@ void AWeapon::FireWithLineTrace(TWeakObjectPtr<class ATPSCharacter> OwnerCharact
 
 	if (HitDetected)
 	{
-		if (HitResult.GetActor()) {
+		ACharacter* HitCharacter = Cast<ACharacter>(HitResult.GetActor());
+
+		
+		if (HitCharacter) {
 			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, TEXT("LineTraceHit"));	     
-
-			FTransform BulletTransform;
-
-			BulletTransform.SetLocation(HitResult.ImpactPoint);
-
-			PlayHitEffect(BulletTransform);
+			FDamageEvent DamageEvent;
+			HitCharacter->TakeDamage(AttackDamage, DamageEvent, Character->GetController(), Character);
 		}
+
+		FTransform BulletTransform;
+
+		BulletTransform.SetLocation(HitResult.ImpactPoint);
+
+		PlayHitEffect(BulletTransform);
 	}
 
 	SetAmmoRemainCount(--AmmoRemainCount);

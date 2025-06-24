@@ -76,6 +76,9 @@ protected:
 	TObjectPtr<class UParticleSystem> HitEffect;
 
 	UPROPERTY(EditAnywhere, Category = Properties)
+	float AttackDamage = 30;
+
+	UPROPERTY(EditAnywhere, Category = Properties)
 	EFireType FireType = EFireType::EF_Projectile;
 	
 
