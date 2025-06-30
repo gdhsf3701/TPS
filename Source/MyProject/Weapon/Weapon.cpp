@@ -113,7 +113,7 @@ void AWeapon::FireWithProjectile(TWeakObjectPtr<class ATPSCharacter> OwnerCharac
 		SpawnBullet->SetAttackDamage(AttackDamage);
 		SpawnBullet->SetActorLocation(FireTransfrom.GetLocation());
 		SpawnBullet->SetActorRotation(FireTransfrom.GetRotation());
-
+		 
 		if (Direction.Normalize()) {
 			SpawnBullet->Fire(Direction);
 		}
